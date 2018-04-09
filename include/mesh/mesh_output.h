@@ -90,12 +90,28 @@ public:
                                        const std::set<std::string> * system_names=libmesh_nullptr);
 
   /**
+   * This method writes a mesh with discontinuous nodal data to a specified file.
+   */
+  virtual void write_equation_systems_discontinuous (const std::string &,
+                                                     const EquationSystems &,
+                                                     const std::set<std::string> * system_names=libmesh_nullptr);
+
+  /**
    * This method implements writing a mesh with nodal data to a
    * specified file where the nodal data and variable names are provided.
    */
   virtual void write_nodal_data (const std::string &,
                                  const std::vector<Number> &,
                                  const std::vector<std::string> &)
+  { libmesh_not_implemented(); }
+
+  /**
+   * This method implements writing a mesh with discontinuous nodal data
+   * to a specified file.
+   */
+  virtual void write_nodal_data_discontinuous (const std::string &,
+                                               const std::vector<Number> &,
+                                               const std::vector<std::string> &)
   { libmesh_not_implemented(); }
 
   /**
@@ -114,6 +130,15 @@ public:
   virtual void write_nodal_data (const std::string &,
                                  const NumericVector<Number> &,
                                  const std::vector<std::string> &);
+
+  /**
+   * This method controls writing nodal data in a discontinuous format to a
+   * mesh. This method should be overriden in inherited classes.
+   */
+  virtual void write_nodal_data_discontinuous (const std::string &,
+                                               const NumericVector<Number> &,
+                                               const std::vector<std::string> &)
+  { libmesh_not_implemented(); }
 
   /**
    * Return/set the precision to use when writing ASCII files.
@@ -162,6 +187,13 @@ private:
    * Precision to use when writing ASCII files.
    */
   unsigned int _ascii_precision;
+
+
+  /**
+   * This method extracts the mesh serialization from the write_equation_systems
+   * methods.
+   */
+  void serializeMesh (const EquationSystems &) const;
 };
 
 

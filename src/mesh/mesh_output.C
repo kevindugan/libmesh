@@ -34,6 +34,61 @@ void MeshOutput<MT>::write_equation_systems (const std::string & fname,
 {
   LOG_SCOPE("write_equation_systems()", "MeshOutput");
 
+  this->serializeMesh(es);
+
+  // Build the list of variable names that will be written.
+  std::vector<std::string> names;
+  es.build_variable_names  (names, libmesh_nullptr, system_names);
+
+  if (!_is_parallel_format)
+    {
+      // Build the nodal solution values & get the variable
+      // names from the EquationSystems object
+      std::vector<Number> soln;
+      es.build_solution_vector (soln, system_names);
+
+      this->write_nodal_data (fname, soln, names);
+    }
+  else // _is_parallel_format
+    {
+      std::unique_ptr<NumericVector<Number>> parallel_soln =
+        es.build_parallel_solution_vector(system_names);
+
+      this->write_nodal_data (fname, *parallel_soln, names);
+    }
+}
+
+template <class MT>
+void MeshOutput<MT>::write_equation_systems_discontinuous (const std::string & fname,
+                                                           const EquationSystems & es,
+                                                           const std::set<std::string> * system_names)
+{
+  LOG_SCOPE("write_equation_systems()", "MeshOutput");
+
+  this->serializeMesh(es);
+
+  // Build the list of variable names that will be written.
+  std::vector<std::string> names;
+  es.build_variable_names  (names, libmesh_nullptr, system_names);
+
+  if (!_is_parallel_format)
+    {
+      // Build the nodal solution values & get the variable
+      // names from the EquationSystems object
+      std::vector<Number> soln;
+      es.build_discontinuous_solution_vector (soln, system_names);
+
+      this->write_nodal_data_discontinuous (fname, soln, names);
+    }
+  else // _is_parallel_format
+    {
+      libmesh_not_implemented();
+    }
+}
+
+template <class MT>
+void MeshOutput<MT>::serializeMesh (const EquationSystems & es) const
+{
   // We may need to gather and/or renumber a DistributedMesh to output
   // it, making that const qualifier in our constructor a dirty lie
   MT & my_mesh = const_cast<MT &>(*_obj);
@@ -65,30 +120,7 @@ void MeshOutput<MT>::write_equation_systems (const std::string & fname,
     }
 
   MeshSerializer serialize(const_cast<MT &>(*_obj), !_is_parallel_format, _serial_only_needed_on_proc_0);
-
-  // Build the list of variable names that will be written.
-  std::vector<std::string> names;
-  es.build_variable_names  (names, libmesh_nullptr, system_names);
-
-  if (!_is_parallel_format)
-    {
-      // Build the nodal solution values & get the variable
-      // names from the EquationSystems object
-      std::vector<Number> soln;
-      es.build_solution_vector (soln, system_names);
-
-      this->write_nodal_data (fname, soln, names);
-    }
-  else // _is_parallel_format
-    {
-      std::unique_ptr<NumericVector<Number>> parallel_soln =
-        es.build_parallel_solution_vector(system_names);
-
-      this->write_nodal_data (fname, *parallel_soln, names);
-    }
 }
-
-
 
 template <class MT>
 void MeshOutput<MT>::write_nodal_data (const std::string & fname,
@@ -102,8 +134,6 @@ void MeshOutput<MT>::write_nodal_data (const std::string & fname,
   parallel_soln.localize(soln);
   this->write_nodal_data(fname, soln, names);
 }
-
-
 
 // Instantiate for our Mesh types.  If this becomes too cumbersome later,
 // move any functions in this file to the header file instead.

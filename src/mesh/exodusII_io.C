@@ -86,20 +86,6 @@ void ExodusII_IO::copy_nodal_solution(System & system,
 
 
 
-void ExodusII_IO::write_discontinuous_exodusII(const std::string & name,
-                                               const EquationSystems & es,
-                                               const std::set<std::string> * system_names)
-{
-  std::vector<std::string> solution_names;
-  std::vector<Number>      v;
-
-  es.build_variable_names  (solution_names, libmesh_nullptr, system_names);
-  es.build_discontinuous_solution_vector (v, system_names);
-
-  this->write_nodal_data_discontinuous(name, v, solution_names);
-}
-
-
 #ifdef LIBMESH_HAVE_EXODUS_API
 void ExodusII_IO::write_timestep_discontinuous (const std::string &fname,
                                                 const EquationSystems &es,
@@ -108,7 +94,7 @@ void ExodusII_IO::write_timestep_discontinuous (const std::string &fname,
                                                 const std::set<std::string> * system_names)
 {
   _timestep = timestep;
-  write_discontinuous_exodusII(fname,es,system_names);
+  write_equation_systems_discontinuous(fname,es,system_names);
 
   if (MeshOutput<MeshBase>::mesh().processor_id())
     return;

@@ -159,13 +159,6 @@ public:
                             std::vector<Real> & global_values);
 
   /**
-   * Writes a exodusII file with discontinuous data
-   */
-  void write_discontinuous_exodusII (const std::string & name,
-                                     const EquationSystems & es,
-                                     const std::set<std::string> * system_names=libmesh_nullptr);
-
-  /**
    * Writes a discontinuous solution at a specific timestep
    * \param fname Name of the file to be written
    * \param es EquationSystems object which contains the solution vector
@@ -202,7 +195,7 @@ public:
    */
   void write_nodal_data_discontinuous (const std::string &,
                                        const std::vector<Number> &,
-                                       const std::vector<std::string> &);
+                                       const std::vector<std::string> &) libmesh_override;
 
   /**
    * Write out global variables.
